@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_USER=codemaker
+      - POSTGRES_PASSWORD=TH3c0d3M4k3R!
+      - POSTGRES_DB=mastermind
+
+  web:
+    build: .
+    env_file: ./.env
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./mastermind:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
