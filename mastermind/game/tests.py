@@ -290,3 +290,15 @@ class GetAllGameGuesses(BaseViewTest):
         serialized = GuessSerializer(expected, many=True)
         self.assertEqual(response.data, serialized.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_all_game_guesses_invalid_game_id(self):
+        """
+        Ensures that API status response is 404 (Not found)
+        when a POST request with invalid game id is made to the mastermind/api/historic
+        """
+        expected_data = {'detail': ErrorDetail(string='Not found.', code='not_found')}
+        # API endpoint
+        response = self.client.get(reverse("historic", kwargs={"game": self.game.pk + 1}))
+        # fetch the data from db
+        self.assertEqual(response.data, expected_data)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
