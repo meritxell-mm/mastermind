@@ -4,18 +4,22 @@ from django.contrib.postgres.fields import ArrayField
 
 
 def get_random_color():
+    """
+    Get random color from color choices
+    :return: string color
+    """
     return Game.COLORS[random.randint(0, len(Game.COLORS) - 1)][0]
 
 
 def create_secret_code():
     """
     Creates a secret code based on random pegs
-    :return: A secret code pegs list
+    :return: list of random colors
     """
     secret_code = []
 
     for idx in range(Game.NUM_SECRET_PEGS):
-        secret_code.append(random.randint(0, len(Game.COLORS) - 1))
+        secret_code.append(get_random_color())
 
     return secret_code
 
@@ -48,11 +52,11 @@ class Game(models.Model):
 class Guess(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     create_date = models.DateTimeField(auto_now_add=True)
-    code_guess = ArrayField(ArrayField(models.CharField(choices=Game.COLORS, max_length=10),
-                                       size=Game.NUM_SECRET_PEGS,
-                                       editable=False))
-    correct_positions = models.IntegerField(default=0)
-    correct_colors = models.IntegerField(default=0)
+    code_guess = ArrayField(models.CharField(choices=Game.COLORS, max_length=10),
+                            size=Game.NUM_SECRET_PEGS,
+                            editable=False)
+    black_pegs = models.IntegerField(default=0)
+    white_pegs = models.IntegerField(default=0)
 
     class Meta:
         ordering = ['game', 'create_date']

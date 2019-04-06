@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             name='Game',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('secret_code', django.contrib.postgres.fields.ArrayField(base_field=models.IntegerField(choices=[(0, 'WHITE'), (1, 'YELLOW'), (2, 'ORANGE'), (3, 'RED'), (4, 'GREEN'), (5, 'BLUE'), (6, 'BROWN'), (7, 'BLACK')]), default=game.models.create_secret_code, editable=False, size=4)),
+                ('secret_code', django.contrib.postgres.fields.ArrayField(base_field=models.CharField(choices=[('WHITE', 'WHITE'), ('YELLOW', 'YELLOW'), ('ORANGE', 'ORANGE'), ('RED', 'RED'), ('GREEN', 'GREEN'), ('BLUE', 'BLUE'), ('BROWN', 'BROWN'), ('BLACK', 'BLACK')], max_length=10), default=game.models.create_secret_code, editable=False, size=4)),
             ],
         ),
         migrations.CreateModel(
@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('create_date', models.DateTimeField(auto_now_add=True)),
-                ('code_guess', django.contrib.postgres.fields.ArrayField(base_field=django.contrib.postgres.fields.ArrayField(base_field=models.IntegerField(choices=[(0, 'WHITE'), (1, 'YELLOW'), (2, 'ORANGE'), (3, 'RED'), (4, 'GREEN'), (5, 'BLUE'), (6, 'BROWN'), (7, 'BLACK')]), editable=False, size=4), size=None)),
+                ('code_guess', django.contrib.postgres.fields.ArrayField(base_field=models.CharField(choices=[('WHITE', 'WHITE'), ('YELLOW', 'YELLOW'), ('ORANGE', 'ORANGE'), ('RED', 'RED'), ('GREEN', 'GREEN'), ('BLUE', 'BLUE'), ('BROWN', 'BROWN'), ('BLACK', 'BLACK')], max_length=10), editable=False, size=4)),
                 ('correct_positions', models.IntegerField(default=0)),
                 ('correct_colors', models.IntegerField(default=0)),
                 ('game', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='game.Game')),
