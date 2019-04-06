@@ -3,9 +3,13 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
 
+def get_random_color():
+    return Game.COLORS[random.randint(0, len(Game.COLORS) - 1)][0]
+
+
 def create_secret_code():
     """
-    Creates a random secret code of pegs
+    Creates a secret code based on random pegs
     :return: A secret code pegs list
     """
     secret_code = []
@@ -23,29 +27,19 @@ class Game(models.Model):
     # number of guesses allowed
     MAX_GUESSES = 11
 
-    # define colors
-    WHITE = 0
-    YELLOW = 1
-    ORANGE = 2
-    RED = 3
-    GREEN = 4
-    BLUE = 5
-    BROWN = 6
-    BLACK = 7
-
     # define colors choices
     COLORS = (
-        (WHITE, 'WHITE'),
-        (YELLOW, 'YELLOW'),
-        (ORANGE, 'ORANGE'),
-        (RED, 'RED'),
-        (GREEN, 'GREEN'),
-        (BLUE, 'BLUE'),
-        (BROWN, 'BROWN'),
-        (BLACK, 'BLACK'),
+        ('WHITE', 'WHITE'),
+        ('YELLOW', 'YELLOW'),
+        ('ORANGE', 'ORANGE'),
+        ('RED', 'RED'),
+        ('GREEN', 'GREEN'),
+        ('BLUE', 'BLUE'),
+        ('BROWN', 'BROWN'),
+        ('BLACK', 'BLACK'),
     )
 
-    secret_code = ArrayField(models.IntegerField(choices=COLORS),
+    secret_code = ArrayField(models.CharField(choices=COLORS, max_length=10),
                              size=NUM_SECRET_PEGS,
                              default=create_secret_code,
                              editable=False)
@@ -54,7 +48,7 @@ class Game(models.Model):
 class Guess(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     create_date = models.DateTimeField(auto_now_add=True)
-    code_guess = ArrayField(ArrayField(models.IntegerField(choices=Game.COLORS),
+    code_guess = ArrayField(ArrayField(models.CharField(choices=Game.COLORS, max_length=10),
                                        size=Game.NUM_SECRET_PEGS,
                                        editable=False))
     correct_positions = models.IntegerField(default=0)
