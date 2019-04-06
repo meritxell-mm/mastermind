@@ -49,17 +49,6 @@ class BaseViewTest(APITestCase):
         """
         self.game = Game.objects.create()
 
-
-class GuessCode(BaseViewTest):
-    # POST url
-    URL = reverse("guess")
-    # required game id error
-    REQUIRED_GAME = {'game': [ErrorDetail(string='This field may not be null.', code='null')]}
-    # invalid code guess error
-    INVALID_CODE = {'code_guess': [
-        ErrorDetail(string='Guess code is invalid. It must be an string color list of ' + str(
-            Game.NUM_SECRET_PEGS) + ' length.', code='invalid')]}
-
     @staticmethod
     def generate_code_guess(length, value):
         """
@@ -76,6 +65,17 @@ class GuessCode(BaseViewTest):
             else:
                 code.append(value)
         return code
+
+
+class GuessCode(BaseViewTest):
+    # POST url
+    URL = reverse("guess")
+    # required game id error
+    REQUIRED_GAME = {'game': [ErrorDetail(string='This field may not be null.', code='null')]}
+    # invalid code guess error
+    INVALID_CODE = {'code_guess': [
+        ErrorDetail(string='Guess code is invalid. It must be an string color list of ' + str(
+            Game.NUM_SECRET_PEGS) + ' length.', code='invalid')]}
 
     def get_invalid_game_error(self):
         """
@@ -172,10 +172,7 @@ class GuessCode(BaseViewTest):
         expected_data = r"[0-" + str(Game.NUM_SECRET_PEGS) + "] black(s?), [0-" + str(
             Game.NUM_SECRET_PEGS) + "] white(s?)"
         # API endpoint
-        code = []
-        while not code or code == self.game.secret_code:  # create a code different than secret code
-            code = self.generate_code_guess(Game.NUM_SECRET_PEGS,
-                                            get_random_color)
+        code = self.get_wrong_code()
         params = {'game_id': self.game.pk, 'code_guess': code}
         response = self.client.post(self.URL, params)
 
@@ -192,10 +189,7 @@ class GuessCode(BaseViewTest):
         expected_data = r"[0-" + str(Game.NUM_SECRET_PEGS) + "] black(s?), [0-" + str(
             Game.NUM_SECRET_PEGS) + "] white(s?)"
         # API endpoint
-        code = []
-        while not code or code == self.game.secret_code:  # create a code different than secret code
-            code = self.generate_code_guess(Game.NUM_SECRET_PEGS,
-                                            get_random_color)
+        code = self.get_wrong_code()
         params = {'game_id': self.game.pk, 'code_guess': code}
         response = self.client.post(self.URL, params)
 
@@ -242,12 +236,31 @@ class GuessCode(BaseViewTest):
         expected_data = Game.GAME_OVER_MSG
         # API endpoint
         for idx in range(Game.MAX_GUESSES):
-            code = []
-            while not code or code == self.game.secret_code:  # create a code different than secret code
-                code = self.generate_code_guess(Game.NUM_SECRET_PEGS,
-                                                get_random_color)
+            code = self.get_wrong_code()
             params = {'game_id': self.game.pk, 'code_guess': code}
             response = self.client.post(self.URL, params)
+
+        # check api response
+        self.assertTrue(expected_data, response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def get_wrong_code(self):
+        code = []
+        while not code or code == self.game.secret_code:  # create a code different than secret code
+            code = self.generate_code_guess(Game.NUM_SECRET_PEGS,
+                                            get_random_color)
+        return code
+
+    def test_new_guess_after_winning(self):
+        """
+        Ensures that API status response is 200 (OK)
+        and data response is winning message even after giving a new guess
+        when a POST request with secret code as guess code is made to the mastermind/api/guess
+        """
+        expected_data = Game.WINNIG_MSG
+        # API endpoint
+        params = {'game_id': self.game.pk, 'code_guess': self.get_wrong_code()}
+        response = self.client.post(self.URL, params)
 
         # check api response
         self.assertTrue(expected_data, response.data)

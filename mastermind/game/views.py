@@ -34,6 +34,8 @@ class GuessCode(APIView):
         if serializer.is_valid(raise_exception=True):
             if Guess.objects.filter(game=game_id).count() > Game.MAX_GUESSES:
                 return Response(Game.GAME_OVER_MSG, status=status.HTTP_200_OK)
+            elif Guess.objects.filter(game=game_id, black_pegs=4).exists():
+                return Response(Game.WINNIG_MSG, status=status.HTTP_200_OK)
             else:
                 guess = serializer.save()
                 black_pegs, white_pegs = self.get_correct_pegs(guess)
