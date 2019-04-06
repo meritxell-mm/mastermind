@@ -2,7 +2,7 @@ import random, re
 from django.urls import reverse
 from rest_framework.test import APITestCase, APIClient
 from rest_framework.views import status
-from .models import Game, get_random_color
+from .models import Game, get_random_color, Guess
 from .serializers import GameSerializer
 from rest_framework.exceptions import ErrorDetail
 
@@ -172,11 +172,83 @@ class GuessCode(BaseViewTest):
         expected_data = r"[0-" + str(Game.NUM_SECRET_PEGS) + "] black(s?), [0-" + str(
             Game.NUM_SECRET_PEGS) + "] white(s?)"
         # API endpoint
-        code = self.generate_code_guess(Game.NUM_SECRET_PEGS,
-                                        get_random_color)
+        code = []
+        while not code or code == self.game.secret_code:  # create a code different than secret code
+            code = self.generate_code_guess(Game.NUM_SECRET_PEGS,
+                                            get_random_color)
         params = {'game_id': self.game.pk, 'code_guess': code}
         response = self.client.post(self.URL, params)
 
         # check api response
         self.assertTrue(re.match(expected_data, response.data))
-        self.assertEqual(self.response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_request_valid(self):
+        """
+        Ensures that API status response is 200 (OK)
+        and data response are how many whites and black pegs should have the decoding board
+        when a POST request with valid params is made to the mastermind/api/guess_code
+        """
+        expected_data = r"[0-" + str(Game.NUM_SECRET_PEGS) + "] black(s?), [0-" + str(
+            Game.NUM_SECRET_PEGS) + "] white(s?)"
+        # API endpoint
+        code = []
+        while not code or code == self.game.secret_code:  # create a code different than secret code
+            code = self.generate_code_guess(Game.NUM_SECRET_PEGS,
+                                            get_random_color)
+        params = {'game_id': self.game.pk, 'code_guess': code}
+        response = self.client.post(self.URL, params)
+
+        # check api response
+        self.assertTrue(re.match(expected_data, response.data))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_create_guess(self):
+        """
+        Ensures that a guess is created
+        when a POST request with valid params is made to the mastermind/api/guess_code
+        """
+        expected_data = len(Guess.objects.all()) + 1
+        # API endpoint
+        code = self.generate_code_guess(Game.NUM_SECRET_PEGS,
+                                        get_random_color)
+        params = {'game_id': self.game.pk, 'code_guess': code}
+        self.client.post(self.URL, params)
+
+        # check api response
+        self.assertTrue(expected_data, len(Guess.objects.all()))
+
+    def test_user_wins(self):
+        """
+        Ensures that API status response is 200 (OK)
+        and data response is winning message
+        when a POST request with secret code as guess code is made to the mastermind/api/guess_code
+        """
+        expected_data = Game.WINNIG_MSG
+        # API endpoint
+        params = {'game_id': self.game.pk, 'code_guess': self.game.secret_code}
+        response = self.client.post(self.URL, params)
+
+        # check api response
+        self.assertTrue(expected_data, response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_game_over(self):
+        """
+        Ensures that API status response is 200 (OK)
+        and data response is game over message due to more than 11 guesses in this game
+        when a POST request is made to the mastermind/api/guess_code
+        """
+        expected_data = Game.GAME_OVER_MSG
+        # API endpoint
+        for idx in range(Game.MAX_GUESSES):
+            code = []
+            while not code or code == self.game.secret_code:  # create a code different than secret code
+                code = self.generate_code_guess(Game.NUM_SECRET_PEGS,
+                                                get_random_color)
+            params = {'game_id': self.game.pk, 'code_guess': code}
+            response = self.client.post(self.URL, params)
+
+        # check api response
+        self.assertTrue(expected_data, response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

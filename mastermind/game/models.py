@@ -25,6 +25,12 @@ def create_secret_code():
 
 
 class Game(models.Model):
+    # Winning message
+    WINNIG_MSG = "Congratulations! YOU WON!!!"
+
+    # Game over message
+    GAME_OVER_MSG = "GAME OVER"
+
     # number of pegs to guess
     NUM_SECRET_PEGS = 4
 
