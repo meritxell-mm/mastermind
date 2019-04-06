@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase, APIClient
 from rest_framework.views import status
 from .models import Game, get_random_color, Guess
-from .serializers import GameSerializer
+from .serializers import GameSerializer, GuessSerializer
 from rest_framework.exceptions import ErrorDetail
 
 
@@ -64,6 +64,13 @@ class BaseViewTest(APITestCase):
                 code.append(value())
             else:
                 code.append(value)
+        return code
+
+    def get_wrong_code(self):
+        code = []
+        while not code or code == self.game.secret_code:  # create a code different than secret code
+            code = self.generate_code_guess(Game.NUM_SECRET_PEGS,
+                                            get_random_color)
         return code
 
 
@@ -244,13 +251,6 @@ class GuessCode(BaseViewTest):
         self.assertTrue(expected_data, response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def get_wrong_code(self):
-        code = []
-        while not code or code == self.game.secret_code:  # create a code different than secret code
-            code = self.generate_code_guess(Game.NUM_SECRET_PEGS,
-                                            get_random_color)
-        return code
-
     def test_new_guess_after_winning(self):
         """
         Ensures that API status response is 200 (OK)
@@ -264,4 +264,29 @@ class GuessCode(BaseViewTest):
 
         # check api response
         self.assertTrue(expected_data, response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class GetAllGameGuesses(BaseViewTest):
+
+    def create_guess(self):
+        Guess.objects.create(game=self.game, code_guess=self.get_wrong_code())
+
+    def setUp(self):
+        super().setUp()
+        for idx in range(5):
+            self.create_guess()  # creates guesses for a game
+
+    def test_get_all_game_guesses(self):
+        """
+        Ensures that API status response is 200 (OK)
+        and data response is all guesses of a game
+        when a POST request is made to the mastermind/api/historic
+        """
+        # API endpoint
+        response = self.client.get(reverse("historic", kwargs={"game": self.game.pk}))
+        # fetch the data from db
+        expected = Guess.objects.filter(game=self.game)
+        serialized = GuessSerializer(expected, many=True)
+        self.assertEqual(response.data, serialized.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
