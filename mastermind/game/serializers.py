@@ -15,6 +15,7 @@ class GuessSerializer(serializers.ModelSerializer):
     code_guess = serializers.ListField(child=serializers.CharField(), required=True)
 
     def validate_code_guess(self, value):
+        """Check if list length and list values are correct"""
         if len(value) != Game.NUM_SECRET_PEGS or not all(n in [color[0] for color in Game.COLORS] for n in value):
             raise serializers.ValidationError(self.ERR_MSG_INVALID_CODE)
         return value
