@@ -3,6 +3,9 @@ from .serializers import GameSerializer, GuessSerializer
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import generics
+from django.shortcuts import get_object_or_404
+
 
 
 class NewGame(APIView):
@@ -82,3 +85,13 @@ class GuessCode(APIView):
         """
         return "{0} black{1}, {2} white{3}".format(black_pegs, self.plural_pegs(black_pegs),
                                                    white_pegs, self.plural_pegs(white_pegs))
+
+
+class GuessList(generics.ListAPIView):
+    """
+    Provides a get method handler.
+    """
+    serializer_class = GuessSerializer
+
+    def get_queryset(self, *args, **kwargs):
+        return Guess.objects.filter(game=get_object_or_404(Game, pk=self.kwargs['game']))
