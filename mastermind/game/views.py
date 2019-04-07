@@ -50,7 +50,7 @@ class GuessCode(APIView):
         if Guess.objects.filter(game=game_id, black_pegs=4).exists():
             return Response(Game.ALREADY_WON_MSG, status=status.HTTP_200_OK)
         elif Guess.objects.filter(game=game_id).count() > Game.MAX_GUESSES:
-            return Response(Game.GAME_OVER_MSGappropiate, status=status.HTTP_200_OK)
+            return Response(Game.GAME_OVER_MSG, status=status.HTTP_200_OK)
         else:
             guess = serializer.save()
             black_pegs, white_pegs = self.get_correct_pegs(guess)
@@ -67,13 +67,24 @@ class GuessCode(APIView):
         """
         secret_code = guess.game.secret_code
         code_guess = guess.code_guess
+        code_guess_aux = code_guess.copy()
+        secret_code_aux = secret_code.copy()
         black_pegs = 0
         white_pegs = 0
+
+        # find black pegs first
         for idx, color in enumerate(code_guess):
             if secret_code[idx] == color:
                 black_pegs += 1
-            elif secret_code[idx] in code_guess:
+                code_guess_aux[idx] = None
+                secret_code_aux[idx] = None
+
+        # find white pegs
+        for idx, color in enumerate(code_guess_aux):
+            if color and color in secret_code_aux:
                 white_pegs += 1
+                secret_code_aux[secret_code_aux.index(color)] = None
+
         guess.black_pegs = black_pegs
         guess.white_pegs = white_pegs
         guess.save()
