@@ -33,7 +33,7 @@ class GuessCode(APIView):
 
         serializer = GuessSerializer(data={'game': game_id, 'code_guess': code_guess})
         if serializer.is_valid(raise_exception=True):
-            return self.give_game_result(game_id, serializer)
+            return Response(self.give_game_result(game_id, serializer), status.HTTP_200_OK)
 
     def give_game_result(self, game_id, serializer):
         """
@@ -48,15 +48,15 @@ class GuessCode(APIView):
                 or string "YOU WON!!" in case the code was broken
         """
         if Guess.objects.filter(game=game_id, black_pegs=4).exists():
-            return Response(Game.ALREADY_WON_MSG, status=status.HTTP_200_OK)
+            return Game.ALREADY_WON_MSG
         elif Guess.objects.filter(game=game_id).count() > Game.MAX_GUESSES:
-            return Response(Game.GAME_OVER_MSG, status=status.HTTP_200_OK)
+            return Game.GAME_OVER_MSG
         else:
             guess = serializer.save()
             black_pegs, white_pegs = self.get_correct_pegs(guess)
             if black_pegs == Game.NUM_SECRET_PEGS:
-                return Response(Game.WINNIG_MSG, status=status.HTTP_200_OK)
-            return Response(self.get_guess_response(black_pegs, white_pegs), status=status.HTTP_200_OK)
+                return Game.WINNIG_MSG
+            return self.get_guess_response(black_pegs, white_pegs)
 
     @staticmethod
     def get_correct_pegs(guess):
