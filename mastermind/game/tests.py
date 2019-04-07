@@ -193,15 +193,19 @@ class GuessCode(BaseViewTest):
         and data response are how many whites and black pegs should have the decoding board
         when a POST request with valid params is made to the mastermind/api/guess
         """
-        expected_data = r"[0-" + str(Game.NUM_SECRET_PEGS) + "] black(s?), [0-" + str(
-            Game.NUM_SECRET_PEGS) + "] white(s?)"
+        expected_data = "2 blacks, 2 whites"
+
+        # almost secret code as code guess
+        self.game.secret_code = ["RED", "BLUE", "GREEN", "RED"]
+        self.game.save()
+        code = ["RED", "BLUE", "RED", "GREEN"]
+
         # API endpoint
-        code = self.get_wrong_code()
         params = {'game_id': self.game.pk, 'code_guess': code}
         response = self.client.post(self.URL, params)
 
         # check api response
-        self.assertTrue(re.match(expected_data, response.data))
+        self.assertEqual(expected_data, response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_create_guess(self):
@@ -229,6 +233,22 @@ class GuessCode(BaseViewTest):
         # API endpoint
         params = {'game_id': self.game.pk, 'code_guess': self.game.secret_code}
         response = self.client.post(self.URL, params)
+
+        # check api response
+        self.assertTrue(expected_data, response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_user_already_won(self):
+        """
+        Ensures that API status response is 200 (OK)
+        and data response is already won message
+        when a POST request with secret code as guess code is made to the mastermind/api/guess
+        """
+        expected_data = Game.ALREADY_WON_MSG
+        # API endpoint
+        for times in range(2):
+            params = {'game_id': self.game.pk, 'code_guess': self.game.secret_code}
+            response = self.client.post(self.URL, params)
 
         # check api response
         self.assertTrue(expected_data, response.data)

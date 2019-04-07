@@ -34,6 +34,7 @@ curl --request POST --url http://localhost:8000/game/api/guess/ \
 #####Possible answers:
 * "1 black, 1 white"
 * "Congratulations! YOU WON!!!"
+* "Game already won"
 * "GAME OVER"
 
 

@@ -7,7 +7,6 @@ from rest_framework import generics
 from django.shortcuts import get_object_or_404
 
 
-
 class NewGame(APIView):
     def post(self, request):
         """
@@ -23,28 +22,41 @@ class NewGame(APIView):
 class GuessCode(APIView):
     def post(self, request):
         """
-        Given a code guess, calculates how many pegs are correct in both color and position,
-        represented by black pegs, and how many pegs have correct color (but wrong position),
-        represented by white pegs.
+        Given a code guess, and game id returns guess respose.
         :return: string representing the number of white and black pegs. Ex:'1 black, 2 whites'
-                or string "GAME OVER" if MAX_GUESSES is exceeded
-                or string "YOU WON!!" in case the code was broken
+                or string Game.GAME_OVER_MSG if Game.MAX_GUESSES is exceeded
+                or string Game.WINNING_MSG in case the code was broken
+                or string Game.ALREADY_WON_MSG in case the code was already won
         """
         game_id = request.POST.get('game_id', None)
         code_guess = request.POST.getlist('code_guess', [])
 
         serializer = GuessSerializer(data={'game': game_id, 'code_guess': code_guess})
         if serializer.is_valid(raise_exception=True):
-            if Guess.objects.filter(game=game_id).count() > Game.MAX_GUESSES:
-                return Response(Game.GAME_OVER_MSG, status=status.HTTP_200_OK)
-            elif Guess.objects.filter(game=game_id, black_pegs=4).exists():
+            return self.give_game_result(game_id, serializer)
+
+    def give_game_result(self, game_id, serializer):
+        """
+        Given a code guess, calculates how many pegs are correct in both color and position,
+        represented by black pegs, and how many pegs have correct color (but wrong position),
+        represented by white pegs and returns an appropriate answer.
+        :param game_id: int game id of current guess
+        :param serializer: GuessSerializer of current guess
+
+        :return: string representing the number of white and black pegs. Ex:'1 black, 2 whites'
+                or string "GAME OVER" if MAX_GUESSES is exceeded
+                or string "YOU WON!!" in case the code was broken
+        """
+        if Guess.objects.filter(game=game_id, black_pegs=4).exists():
+            return Response(Game.ALREADY_WON_MSG, status=status.HTTP_200_OK)
+        elif Guess.objects.filter(game=game_id).count() > Game.MAX_GUESSES:
+            return Response(Game.GAME_OVER_MSGappropiate, status=status.HTTP_200_OK)
+        else:
+            guess = serializer.save()
+            black_pegs, white_pegs = self.get_correct_pegs(guess)
+            if black_pegs == Game.NUM_SECRET_PEGS:
                 return Response(Game.WINNIG_MSG, status=status.HTTP_200_OK)
-            else:
-                guess = serializer.save()
-                black_pegs, white_pegs = self.get_correct_pegs(guess)
-                if black_pegs == Game.NUM_SECRET_PEGS:
-                    return Response(Game.WINNIG_MSG, status=status.HTTP_200_OK)
-                return Response(self.get_guess_response(black_pegs, white_pegs), status=status.HTTP_200_OK)
+            return Response(self.get_guess_response(black_pegs, white_pegs), status=status.HTTP_200_OK)
 
     @staticmethod
     def get_correct_pegs(guess):

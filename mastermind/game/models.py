@@ -25,6 +25,9 @@ def create_secret_code():
 
 
 class Game(models.Model):
+    # Already won message
+    ALREADY_WON_MSG = "Game already won"
+
     # Winning message
     WINNIG_MSG = "Congratulations! YOU WON!!!"
 
