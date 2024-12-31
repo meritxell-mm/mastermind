@@ -15,8 +15,10 @@ DATABASES = {
     'default': env.db('DATABASE_URL', default='postgres://your_db_user:your_db_password@db:5432/your_db_name')
 }
 
+# Make sure is set to False in production
 DEBUG = env.bool('DJANGO_DEBUG', default=False)
 
+#* for demo purposes
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
 
 # Application definition

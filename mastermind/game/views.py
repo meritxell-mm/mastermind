@@ -22,7 +22,7 @@ class NewGame(APIView):
 class GuessCode(APIView):
     def post(self, request):
         """
-        Given a code guess, and game id returns guess respose.
+        Given a code guess, and game id returns guess response.
         :return: string representing the number of white and black pegs. Ex:'1 black, 2 whites'
                 or string Game.GAME_OVER_MSG if Game.MAX_GUESSES is exceeded
                 or string Game.WINNING_MSG in case the code was broken
