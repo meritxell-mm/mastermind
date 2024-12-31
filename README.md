@@ -9,17 +9,17 @@ docker-compose up
 
 ## APIs
 
-### New game - POST /game/api/new/:
+### New game - POST /mastermind/start/:
 #####Request:
 ```bash
-curl --request POST  --url http://localhost:8000/game/api/new/ 
+curl --request POST  --url http://localhost:8000/mastermind/start/ 
 ```
 #####Answer:
 ```json
 {"pk":1}
 ```
 
-### Guess code - POST /game/api/guess/:
+### Guess code - POST /mastermind/guess/:
 #####Request:
 Expects an object in the request's body with the following information:
 
@@ -27,7 +27,7 @@ Expects an object in the request's body with the following information:
 * code_guess (string list): The user's code guess
 
 ```bash
-curl --request POST --url http://localhost:8000/game/api/guess/ \
+curl --request POST --url http://localhost:8000/mastermind/guess/ \
        --data 'game_id=1&code_guess=RED&code_guess=GREEN&code_guess=RED&code_guess=YELLOW'
 ```
 
@@ -38,10 +38,10 @@ curl --request POST --url http://localhost:8000/game/api/guess/ \
 * "GAME OVER"
 
 
-### See game historic - GET /game/api/historic/<game_id>/:
+### See game historic - GET /mastermind/historic/<game_id>/:
 #####Request:
 ```bash
-curl --request GET --url http://localhost:8000/game/api/historic/1/
+curl --request GET --url http://localhost:8000/mastermind/historic/1/
 ```
 
 #####Answer:
