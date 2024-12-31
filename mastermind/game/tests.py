@@ -22,7 +22,7 @@ class CreateGame(APITestCase):
     def test_create_game(self):
         """
         Ensures that api response is the game id
-        when a POST request is made to the mastermind/api/new
+        when a POST request is made to the mastermind/start
         """
         # check api response
         expected_data = GameSerializer(self.expected_obj)
@@ -32,7 +32,7 @@ class CreateGame(APITestCase):
     def test_create_secret_code(self):
         """
         Ensures that a game is created with a secret_code
-        when a POST request is made to the mastermind/api/new
+        when a POST request is made to the mastermind/start
         """
         # check object values
         self.assertTrue(self.expected_obj)
@@ -96,7 +96,7 @@ class GuessCode(BaseViewTest):
     def test_request_without_params(self):
         """
         Ensures that API response is 400 (Bad request)
-        when a POST request without params is made to the mastermind/api/guess
+        when a POST request without params is made to the mastermind/guess
         """
         expected_response = {**self.REQUIRED_GAME, **self.INVALID_CODE}
 
@@ -111,7 +111,7 @@ class GuessCode(BaseViewTest):
     def test_request_with_invalid_game_id(self):
         """
         Ensures that API response is 400 (Bad Request)
-        when a POST request with invalid game_id is made to the mastermind/api/guess
+        when a POST request with invalid game_id is made to the mastermind/guess
         """
         expected_response = self.get_invalid_game_error()
 
@@ -128,7 +128,7 @@ class GuessCode(BaseViewTest):
     def test_without_code_guess(self):
         """
         Ensures that API response is 400 (Bad request)
-        when a POST request without code_guess is made to the mastermind/api/guess
+        when a POST request without code_guess is made to the mastermind/guess
         """
         expected_response = self.INVALID_CODE
 
@@ -143,7 +143,7 @@ class GuessCode(BaseViewTest):
     def test_request_with_invalid_code_length(self):
         """
         Ensures that API response is 400 (Bad request)
-        when a POST request with invalid code guess length is made to the mastermind/api/guess
+        when a POST request with invalid code guess length is made to the mastermind/guess
         """
         # create invalid code with Game.NUM_SECRET_PEGS+1 length
         code = GuessCode.generate_code_guess(Game.NUM_SECRET_PEGS + 1,
@@ -159,7 +159,7 @@ class GuessCode(BaseViewTest):
     def test_request_with_invalid_code_guess_values(self):
         """
         Ensures that API response is 400 (Bad request)
-        when a POST request with invalid values in code guess is made to the mastermind/api/guess
+        when a POST request with invalid values in code guess is made to the mastermind/guess
         """
         # API endpoint
         code = self.generate_code_guess(Game.NUM_SECRET_PEGS, 'test')  # creates 'test' array
@@ -174,7 +174,7 @@ class GuessCode(BaseViewTest):
         """
         Ensures that API status response is 200 (OK)
         and data response are how many whites and black pegs should have the decoding board
-        when a POST request with valid params is made to the mastermind/api/guess
+        when a POST request with valid params is made to the mastermind/guess
         """
         expected_data = r"[0-" + str(Game.NUM_SECRET_PEGS) + "] black(s?), [0-" + str(
             Game.NUM_SECRET_PEGS) + "] white(s?)"
@@ -191,7 +191,7 @@ class GuessCode(BaseViewTest):
         """
         Ensures that API status response is 200 (OK)
         and data response are how many whites and black pegs should have the decoding board
-        when a POST request with valid params is made to the mastermind/api/guess
+        when a POST request with valid params is made to the mastermind/guess
         """
         expected_data = "2 blacks, 2 whites"
 
@@ -211,7 +211,7 @@ class GuessCode(BaseViewTest):
     def test_create_guess(self):
         """
         Ensures that a guess is created
-        when a POST request with valid params is made to the mastermind/api/guess
+        when a POST request with valid params is made to the mastermind/guess
         """
         expected_data = len(Guess.objects.all()) + 1
         # API endpoint
@@ -227,7 +227,7 @@ class GuessCode(BaseViewTest):
         """
         Ensures that API status response is 200 (OK)
         and data response is winning message
-        when a POST request with secret code as guess code is made to the mastermind/api/guess
+        when a POST request with secret code as guess code is made to the mastermind/guess
         """
         expected_data = Game.WINNIG_MSG
         # API endpoint
@@ -242,7 +242,7 @@ class GuessCode(BaseViewTest):
         """
         Ensures that API status response is 200 (OK)
         and data response is already won message
-        when a POST request with secret code as guess code is made to the mastermind/api/guess
+        when a POST request with secret code as guess code is made to the mastermind/guess
         """
         expected_data = Game.ALREADY_WON_MSG
         # API endpoint
@@ -258,7 +258,7 @@ class GuessCode(BaseViewTest):
         """
         Ensures that API status response is 200 (OK)
         and data response is game over message due to more than 11 guesses in this game
-        when a POST request is made to the mastermind/api/guess
+        when a POST request is made to the mastermind/guess
         """
         expected_data = Game.GAME_OVER_MSG
         # API endpoint
@@ -275,7 +275,7 @@ class GuessCode(BaseViewTest):
         """
         Ensures that API status response is 200 (OK)
         and data response is winning message even after giving a new guess
-        when a POST request with secret code as guess code is made to the mastermind/api/guess
+        when a POST request with secret code as guess code is made to the mastermind/guess
         """
         expected_data = Game.WINNIG_MSG
         # API endpoint
@@ -301,7 +301,7 @@ class GetAllGameGuesses(BaseViewTest):
         """
         Ensures that API status response is 200 (OK)
         and data response is all guesses of a game
-        when a POST request is made to the mastermind/api/historic
+        when a POST request is made to the mastermind/historic
         """
         # API endpoint
         response = self.client.get(reverse("historic", kwargs={"game": self.game.pk}))
@@ -314,7 +314,7 @@ class GetAllGameGuesses(BaseViewTest):
     def test_get_all_game_guesses_invalid_game_id(self):
         """
         Ensures that API status response is 404 (Not found)
-        when a POST request with invalid game id is made to the mastermind/api/historic
+        when a POST request with invalid game id is made to the mastermind/historic
         """
         expected_data = {'detail': ErrorDetail(string='Not found.', code='not_found')}
         # API endpoint
