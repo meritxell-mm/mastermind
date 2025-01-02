@@ -34,6 +34,9 @@ class Game(models.Model):
     # Game over message
     GAME_OVER_MSG = "GAME OVER"
 
+    # Game not found message
+    ERR_MSG_INVALID_GAME = "Invalid game id. Game not found."
+
     # number of pegs to guess
     NUM_SECRET_PEGS = 4
 
@@ -52,6 +55,7 @@ class Game(models.Model):
         ('BLACK', 'BLACK'),
     )
 
+    is_won = models.BooleanField(default=False)
     secret_code = ArrayField(models.CharField(choices=COLORS, max_length=10),
                              size=NUM_SECRET_PEGS,
                              default=create_secret_code,
@@ -59,7 +63,9 @@ class Game(models.Model):
 
 
 class Guess(models.Model):
-    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    ERR_MSG_INVALID_CODE = "Guess code is invalid. It must be an string color list of " + str(
+        Game.NUM_SECRET_PEGS) + " length."
+    game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='guesses')
     create_date = models.DateTimeField(auto_now_add=True)
     code_guess = ArrayField(models.CharField(choices=Game.COLORS, max_length=10),
                             size=Game.NUM_SECRET_PEGS,

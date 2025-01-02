@@ -9,17 +9,26 @@ class GameSerializer(serializers.ModelSerializer):
 
 
 class GuessSerializer(serializers.ModelSerializer):
-    ERR_MSG_INVALID_CODE = "Guess code is invalid. It must be an string color list of " \
-                           + str(Game.NUM_SECRET_PEGS) + " length."
-
-    code_guess = serializers.ListField(child=serializers.CharField(), required=True)
-
-    def validate_code_guess(self, value):
-        """Check if list length and list values are correct"""
-        if len(value) != Game.NUM_SECRET_PEGS or not all(n in [color[0] for color in Game.COLORS] for n in value):
-            raise serializers.ValidationError(self.ERR_MSG_INVALID_CODE)
-        return value
-
     class Meta:
         model = Guess
-        fields = "__all__"
+        fields = ['id', 'game', 'code_guess', 'black_pegs', 'white_pegs', 'create_date']
+
+    def plural_pegs(self, count):
+        """
+        Get plural char 's' if needed
+        :param count: number of pegs
+        :return: string 's' or empty string
+        """
+        return 's' if count > 1 else ''
+
+    @property
+    def result_message(self):
+        """
+        Get string response given a guess code
+        :param black_pegs: number of black pegs
+        :param white_pegs: number of white pegs
+        :return: string
+        """
+        black_plural = self.plural_pegs(self.instance.black_pegs)
+        white_plural = self.plural_pegs(self.instance.white_pegs)
+        return f"{self.instance.black_pegs} black peg{black_plural}, {self.instance.white_pegs} white peg{white_plural}"
